@@ -27,7 +27,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen on port %s: %v", port, err)
 	}
-	log.Printf("grpc-ping: starting at %v", lis.Addr())
+	log.Printf("grpc-ping: starting on port %s", port)
 
 	srv := grpc.NewServer()
 	pb.RegisterPingServiceServer(srv, &pingService{})
@@ -39,12 +39,12 @@ func main() {
 }
 
 func (s *pingService) Send(ctx context.Context, req *pb.Request) (*pb.Response, error) {
-	log.Print("sending ping response")
-	return &pb.Response{
-		Pong: &pb.Pong{
-			Index:      1,
-			Message:    req.GetMessage(),
-			ReceivedOn: timestamppb.Now(),
-		},
-	}, nil
+	log.Println("Received :", req.Message)
+	response := &pb.Response{
+		Index:      1,
+		Message:    "Hello there", //req.GetMessage(),
+		ReceivedOn: timestamppb.Now(),
+	}
+
+	return response, nil
 }

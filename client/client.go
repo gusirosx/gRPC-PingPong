@@ -35,11 +35,12 @@ func send(client pb.PingServiceClient) {
 		log.Fatalf("Error while executing Send: %v", err)
 	}
 
-	respMessage := resp.Pong.GetMessage()
+	respMessage := resp.GetMessage()
 	//timestamp := ptypes.TimestampString(resp.Pong.GetReceivedOn())
-	timestamp := resp.Pong.GetReceivedOn().AsTime().Format(time.RFC3339)
+	timestamp := resp.GetReceivedOn().AsTime().Format("2006-01-02 15:04:05")
 	//ptypes.TimestampString is deprecated: Call the ts.AsTime method instead, followed by a call to the Format method on the time.Time value.
 	log.Println("Unary Request/Unary Response")
 	log.Printf("  Sent Ping: %s", *message)
 	log.Printf("  Received:\n    Pong: %s\n    Server Time: %s", respMessage, timestamp)
+	log.Println("    Server Time: ", time.Now().Format("2006-01-02 15:04:05"))
 }
