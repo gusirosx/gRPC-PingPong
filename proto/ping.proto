@@ -8,7 +8,6 @@ option go_package = "/gRPC-Ping;gRPC_Ping";
 
 service PingService {
   rpc Send(Request) returns (Response) {}
-  rpc SendUpstream(Request) returns (Response) {}
 }
 
 message Request {
