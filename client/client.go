@@ -21,10 +21,6 @@ func main() {
 	}
 	defer conn.Close()
 
-	// if err := streamTime(client, *duration); err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	client := pb.NewPingServiceClient(conn)
 	send(client)
 }

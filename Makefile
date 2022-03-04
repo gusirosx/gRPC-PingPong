@@ -8,9 +8,3 @@ run_server:
 run_client:
 	@echo "---- Running Client ----"
 	@go run client/*
-
-
-# define GenerateProtoFiles
-# 	@protoc --go_out=$(1) $(GO_OPT) --go-grpc_out=$(1) $(GRPC_OPT) $(PROTO_FLAG)
-# 	@echo '---> Generating $(2) Protofiles'
-# endef

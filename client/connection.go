@@ -15,7 +15,6 @@ var (
 	serverHost   = flag.String("server-host", "localhost", "Host name to which server IP should resolve")
 	insecureFlag = flag.Bool("insecure", true, "Skip SSL validation? [false]")
 	skipVerify   = flag.Bool("skip-verify", false, "Skip server hostname verification in SSL validation [false]")
-	//duration     = flag.Uint("duration", 10, "duration (in seconds) to stream the time from the server for")
 )
 
 func init() {
@@ -23,8 +22,8 @@ func init() {
 	log.SetFlags(log.Flags() ^ log.Ltime ^ log.Ldate)
 }
 
-// Connection creates a new gRPC connection to the server.
-// host should be of the form domain:port, e.g., example.com:443
+/* Connection creates a new gRPC connection to the server.
+   host should be of the form domain:port, (example.com:443) */
 func Connection() (*grpc.ClientConn, error) {
 	var opts []grpc.DialOption
 	if *serverAddr == "" {
