@@ -1,85 +1,53 @@
 // Sample grpc-ping acts as an intermediary to the ping service.
 package main
 
-// import (
-// 	"context"
-// 	"fmt"
-// 	"log"
-// 	"net"
-// 	"os"
-// 	"strings"
-// 	"time"
+import (
+	"context"
+	"log"
+	"net"
 
-// 	pb "github.com/GoogleCloudPlatform/golang-samples/run/grpc-ping/pkg/api/v1"
-// 	"github.com/golang/protobuf/ptypes"
-// 	"google.golang.org/grpc/status"
+	pb "gRPC-Ping/proto"
 
-// 	"google.golang.org/grpc"
-// )
+	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+)
 
-// // [START cloudrun_grpc_server]
-// // [START run_grpc_server]
-// func main() {
-// 	log.Printf("grpc-ping: starting server...")
+const (
+	port = ":50050"
+)
 
-// 	port := os.Getenv("PORT")
-// 	if port == "" {
-// 		port = "8080"
-// 		log.Printf("Defaulting to port %s", port)
-// 	}
+// pingService is used to implement PingServiceServer.
+type pingService struct {
+	pb.UnimplementedPingServiceServer
+}
 
-// 	listener, err := net.Listen("tcp", ":"+port)
-// 	if err != nil {
-// 		log.Fatalf("net.Listen: %v", err)
-// 	}
+func main() {
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("failed to listen on port %s: %v", port, err)
+	}
+	log.Printf("grpc-ping: starting at %v", lis.Addr())
 
-// 	grpcServer := grpc.NewServer()
-// 	pb.RegisterPingServiceServer(grpcServer, &pingService{})
-// 	if err = grpcServer.Serve(listener); err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
+	srv := grpc.NewServer()
+	pb.RegisterPingServiceServer(srv, &pingService{})
+	// Register reflection service on gRPC server.
+	reflection.Register(srv)
+	if err := srv.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
 
-// // [END run_grpc_server]
-// // [END cloudrun_grpc_server]
-
-// // conn holds an open connection to the ping service.
-// var conn *grpc.ClientConn
-
-// func init() {
-// 	if os.Getenv("GRPC_PING_HOST") != "" {
-// 		var err error
-// 		conn, err = NewConn(os.Getenv("GRPC_PING_HOST"), os.Getenv("GRPC_PING_INSECURE") != "")
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 	} else {
-// 		log.Println("Starting without support for SendUpstream: configure with 'GRPC_PING_HOST' environment variable. E.g., example.com:443")
-// 	}
-// }
-
-// // NewConn creates a new gRPC connection.
-// // host should be of the form domain:port, e.g., example.com:443
-// func NewConn(host string, insecure bool) (*grpc.ClientConn, error) {
-// 	var opts []grpc.DialOption
-
-// 	return grpc.Dial(host, opts...)
-// }
-
-// type pingService struct {
-// 	pb.UnimplementedPingServiceServer
-// }
-
-// func (s *pingService) Send(ctx context.Context, req *pb.Request) (*pb.Response, error) {
-// 	log.Print("sending ping response")
-// 	return &pb.Response{
-// 		Pong: &pb.Pong{
-// 			Index:      1,
-// 			Message:    req.GetMessage(),
-// 			ReceivedOn: ptypes.TimestampNow(),
-// 		},
-// 	}, nil
-// }
+func (s *pingService) Send(ctx context.Context, req *pb.Request) (*pb.Response, error) {
+	log.Print("sending ping response")
+	return &pb.Response{
+		Pong: &pb.Pong{
+			Index:      1,
+			Message:    req.GetMessage(),
+			ReceivedOn: ptypes.TimestampNow(),
+		},
+	}, nil
+}
 
 // func (s *pingService) SendUpstream(ctx context.Context, req *pb.Request) (*pb.Response, error) {
 // 	if conn == nil {
