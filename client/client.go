@@ -7,13 +7,10 @@ import (
 	pb "gRPC-Ping/proto"
 	"log"
 	"time"
-
-	"github.com/golang/protobuf/ptypes"
 )
 
 var (
-	message      = flag.String("message", "Hi there", "The body of the content sent to server")
-	sendUpstream = flag.Bool("relay", false, "Direct ping to relay the request to a ping-upstream service [false]")
+	message = flag.String("message", "Hi there", "The body of the content sent to server")
 )
 
 func main() {
@@ -36,24 +33,16 @@ func send(client pb.PingServiceClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 
-	var resp *pb.Response
-	var err error
-	if *sendUpstream {
-		resp, err = client.SendUpstream(ctx, &pb.Request{
-			Message: *message,
-		})
-	} else {
-		resp, err = client.Send(ctx, &pb.Request{
-			Message: *message,
-		})
-	}
+	resp, err := client.Send(ctx, &pb.Request{Message: *message})
 
 	if err != nil {
 		log.Fatalf("Error while executing Send: %v", err)
 	}
 
 	respMessage := resp.Pong.GetMessage()
-	timestamp := ptypes.TimestampString(resp.Pong.GetReceivedOn())
+	//timestamp := ptypes.TimestampString(resp.Pong.GetReceivedOn())
+	timestamp := resp.Pong.GetReceivedOn().AsTime().Format(time.RFC3339)
+	//ptypes.TimestampString is deprecated: Call the ts.AsTime method instead, followed by a call to the Format method on the time.Time value.
 	log.Println("Unary Request/Unary Response")
 	log.Printf("  Sent Ping: %s", *message)
 	log.Printf("  Received:\n    Pong: %s\n    Server Time: %s", respMessage, timestamp)

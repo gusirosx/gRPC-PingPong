@@ -8,9 +8,9 @@ import (
 
 	pb "gRPC-Ping/proto"
 
-	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -44,51 +44,7 @@ func (s *pingService) Send(ctx context.Context, req *pb.Request) (*pb.Response, 
 		Pong: &pb.Pong{
 			Index:      1,
 			Message:    req.GetMessage(),
-			ReceivedOn: ptypes.TimestampNow(),
+			ReceivedOn: timestamppb.Now(),
 		},
 	}, nil
 }
-
-// func (s *pingService) SendUpstream(ctx context.Context, req *pb.Request) (*pb.Response, error) {
-// 	if conn == nil {
-// 		return nil, fmt.Errorf("no upstream connection configured")
-// 	}
-
-// 	p := &pb.Request{
-// 		Message: req.GetMessage() + " (relayed)",
-// 	}
-
-// 	hostWithoutPort := strings.Split(os.Getenv("GRPC_PING_HOST"), ":")[0]
-// 	tokenAudience := "https://" + hostWithoutPort
-// 	resp, err := PingRequest(conn, p, tokenAudience, os.Getenv("GRPC_PING_UNAUTHENTICATED") == "")
-// 	if err != nil {
-// 		log.Printf("PingRequest: %q", err)
-// 		c := status.Code(err)
-// 		return nil, status.Errorf(c, "Could not reach ping service: %s", status.Convert(err).Message())
-// 	}
-
-// 	log.Print("received upstream pong")
-// 	return &pb.Response{
-// 		Pong: resp.Pong,
-// 	}, nil
-// }
-
-// // pingRequest sends a new gRPC ping request to the server configured in the connection.
-// func pingRequest(conn *grpc.ClientConn, p *pb.Request) (*pb.Response, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-// 	defer cancel()
-
-// 	client := pb.NewPingServiceClient(conn)
-// 	return client.Send(ctx, p)
-// }
-
-// // [END run_grpc_request]
-// // [END cloudrun_grpc_request]
-
-// // PingRequest creates a new gRPC request to the upstream ping gRPC service.
-// func PingRequest(conn *grpc.ClientConn, p *pb.Request, url string, authenticated bool) (*pb.Response, error) {
-// 	if authenticated {
-// 		return pingRequestWithAuth(conn, p, url)
-// 	}
-// 	return pingRequest(conn, p)
-// }
