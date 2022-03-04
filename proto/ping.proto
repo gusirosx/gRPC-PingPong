@@ -1,25 +1,24 @@
 syntax = "proto3";
 
+option go_package = "/gRPC-Ping;gRPC_Ping";
+
 package proto;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "/gRPC-Ping;gRPC_Ping";
-
+// PingService service definition.
 service PingService {
   rpc Send(Request) returns (Response) {}
 }
 
+// The request message containing the message
 message Request {
   string message = 1;
 }
 
-message Pong {
+// The response message containing the pong message
+message Response {
   int32 index = 1;
   string message = 2;
   google.protobuf.Timestamp received_on = 3;
-}
-
-message Response {
-  Pong pong = 1;
 }
