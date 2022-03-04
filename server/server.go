@@ -39,10 +39,9 @@ func main() {
 }
 
 func (s *pingService) Send(ctx context.Context, req *pb.Request) (*pb.Response, error) {
-	log.Println("Received :", req.Message)
+	log.Println("Received :", req.Message, "--> Responding: Pong")
 	response := &pb.Response{
-		Index:      1,
-		Message:    "Hello there", //req.GetMessage(),
+		Message:    "Pong",
 		ReceivedOn: timestamppb.Now(),
 	}
 

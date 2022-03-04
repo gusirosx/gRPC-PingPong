@@ -18,7 +18,6 @@ message Request {
 
 // The response message containing the pong message
 message Response {
-  int32 index = 1;
   string message = 2;
   google.protobuf.Timestamp received_on = 3;
 }

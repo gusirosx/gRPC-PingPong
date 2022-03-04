@@ -2,15 +2,13 @@
 package main
 
 import (
-	"context"
-	"flag"
+	"fmt"
 	pb "gRPC-Ping/proto"
 	"log"
+	"net/http"
 	"time"
-)
 
-var (
-	message = flag.String("message", "Hi there", "The body of the content sent to server")
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -20,27 +18,44 @@ func main() {
 		log.Printf("failed to dial server %s: %v", *serverAddr, err)
 	}
 	defer conn.Close()
-
 	client := pb.NewPingServiceClient(conn)
-	send(client)
+	//send(client)
+
+	// Set up a http server.
+	router := gin.Default()
+
+	router.GET("/", func(ctx *gin.Context) {
+		fmt.Fprintln(ctx.Writer, "Up and running...")
+	})
+
+	router.GET("/ping", func(ctx *gin.Context) {
+		message := "Ping" //The body of the content sent to server
+		// Contact the server and print out its response.
+		response, err := client.Send(ctx, &pb.Request{Message: message})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"response": Response{
+				Send:         message,
+				SendTime:     time.Now(),
+				Received:     response.Message,
+				ReceivedTime: response.ReceivedOn.AsTime()},
+		})
+	})
+	// Run http server
+	if err := router.Run(":8080"); err != nil {
+		log.Fatalf("could not run server: %v", err)
+	}
 }
 
-func send(client pb.PingServiceClient) {
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
-	defer cancel()
-
-	resp, err := client.Send(ctx, &pb.Request{Message: *message})
-
-	if err != nil {
-		log.Fatalf("Error while executing Send: %v", err)
-	}
-
-	respMessage := resp.GetMessage()
-	//timestamp := ptypes.TimestampString(resp.Pong.GetReceivedOn())
-	timestamp := resp.GetReceivedOn().AsTime().Format("2006-01-02 15:04:05")
-	//ptypes.TimestampString is deprecated: Call the ts.AsTime method instead, followed by a call to the Format method on the time.Time value.
-	log.Println("Unary Request/Unary Response")
-	log.Printf("  Sent Ping: %s", *message)
-	log.Printf("  Received:\n    Pong: %s\n    Server Time: %s", respMessage, timestamp)
-	log.Println("    Server Time: ", time.Now().Format("2006-01-02 15:04:05"))
+// REST response struct
+type Response struct {
+	Send         string    `json:"send"`
+	SendTime     time.Time `json:"send_on"`
+	Received     string    `json:"received"`
+	ReceivedTime time.Time `json:"received_on"`
 }
